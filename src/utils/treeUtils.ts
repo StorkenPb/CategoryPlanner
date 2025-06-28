@@ -6,6 +6,8 @@ export interface TreeNode {
     label: string;
     code: string;
     labels: { language: string; text: string }[];
+    parent?: string;
+    position?: { x: number; y: number };
   };
   position: { x: number; y: number };
   type?: string;
@@ -15,6 +17,8 @@ export interface TreeEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
   type?: string;
 }
 
@@ -56,8 +60,16 @@ export function buildTreeFromCategories(categories: CategoryNode[], language: st
     const startPosX = startX - totalWidth / 2 + levelWidth / 2;
     
     children.forEach((child, index) => {
-      const x = startPosX + index * levelWidth;
-      const y = level * levelHeight;
+      // Use stored position if available, otherwise calculate new position
+      let x, y;
+      
+      if (child.position) {
+        x = child.position.x;
+        y = child.position.y;
+      } else {
+        x = startPosX + index * levelWidth;
+        y = level * levelHeight;
+      }
       
       // Create node
       nodes.push({
@@ -66,17 +78,23 @@ export function buildTreeFromCategories(categories: CategoryNode[], language: st
           label: getLabelText(child.labels, language),
           code: child.code,
           labels: child.labels,
+          parent: parentCode || undefined,
+          position: { x, y },
         },
         position: { x, y },
       });
       
-      // Create edge if not root
-      if (parentCode) {
-        edges.push({
+      // Create edge if not root level (parentCode is not null)
+      if (parentCode !== null) {
+        const edge = {
           id: `${parentCode}-${child.code}`,
           source: parentCode,
           target: child.code,
-        });
+          sourceHandle: 'bottom',
+          targetHandle: 'top',
+          type: 'smoothstep',
+        };
+        edges.push(edge);
       }
       
       // Recursively add children

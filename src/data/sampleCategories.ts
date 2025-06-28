@@ -7,6 +7,7 @@ export interface CategoryNode {
   code: string;
   labels: Label[];
   parent?: string;
+  position?: { x: number; y: number };
 }
 
 export const sampleCategories: CategoryNode[] = [
