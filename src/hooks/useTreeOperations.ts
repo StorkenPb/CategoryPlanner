@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { CategoryNode } from '../data/sampleCategories';
+import { calculateSiblingPosition, calculateChildPosition } from '../utils/layout';
+import { SUPPORTED_LANGUAGES } from '../config/languages';
 
 export const useTreeOperations = (categories: CategoryNode[], setCategories: (categories: CategoryNode[]) => void) => {
   // Function to generate a simple UID for new nodes
@@ -15,40 +17,48 @@ export const useTreeOperations = (categories: CategoryNode[], setCategories: (ca
     return uid;
   }, [categories]);
 
+  // Function to create labels for all supported languages
+  const createLabelsForAllLanguages = useCallback((defaultText: string = 'New Category') => {
+    return SUPPORTED_LANGUAGES.map(lang => ({
+      language: lang.code,
+      text: defaultText
+    }));
+  }, []);
+
   // Function to add a sibling node
   const addSiblingNode = useCallback((parentNodeId: string) => {
     const parentNode = categories.find(cat => cat.code === parentNodeId);
     if (!parentNode) return;
 
     const newCode = generateUID();
+    const position = calculateSiblingPosition(categories, parentNode.parent || null, parentNodeId);
+    
     const newCategory: CategoryNode = {
       code: newCode,
-      labels: [
-        { language: 'us', text: 'New Category' },
-        { language: 'se', text: 'Ny Kategori' }
-      ],
+      labels: createLabelsForAllLanguages(),
       parent: parentNode.parent, // Same parent as the selected node
+      position: position,
     };
 
     setCategories([...categories, newCategory]);
     return newCode;
-  }, [categories, generateUID, setCategories]);
+  }, [categories, generateUID, setCategories, createLabelsForAllLanguages]);
 
   // Function to add a child node
   const addChildNode = useCallback((parentNodeId: string) => {
     const newCode = generateUID();
+    const position = calculateChildPosition(categories, parentNodeId);
+    
     const newCategory: CategoryNode = {
       code: newCode,
-      labels: [
-        { language: 'us', text: 'New Category' },
-        { language: 'se', text: 'Ny Kategori' }
-      ],
+      labels: createLabelsForAllLanguages(),
       parent: parentNodeId, // Parent is the selected node
+      position: position,
     };
 
     setCategories([...categories, newCategory]);
     return newCode;
-  }, [generateUID, setCategories]);
+  }, [categories, generateUID, setCategories, createLabelsForAllLanguages]);
 
   // Function to handle label changes
   const handleLabelChange = useCallback((nodeId: string, newLabel: string) => {
@@ -58,7 +68,7 @@ export const useTreeOperations = (categories: CategoryNode[], setCategories: (ca
           return {
             ...category,
             labels: category.labels.map(label => 
-              label.language === 'us' 
+              label.language === 'en' 
                 ? { ...label, text: newLabel }
                 : label
             )

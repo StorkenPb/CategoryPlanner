@@ -1,34 +1,10 @@
 import { CategoryNode } from '../data/sampleCategories';
+import { TreeNode, TreeEdge } from './types';
+import { getLabelText } from './labelUtils';
+import { LEVEL_HEIGHT, SIBLING_SPACING } from './layout';
+import { DEFAULT_LANGUAGE } from '../config/languages';
 
-export interface TreeNode {
-  id: string;
-  data: {
-    label: string;
-    code: string;
-    labels: { language: string; text: string }[];
-    parent?: string;
-    position?: { x: number; y: number };
-  };
-  position: { x: number; y: number };
-  type?: string;
-}
-
-export interface TreeEdge {
-  id: string;
-  source: string;
-  target: string;
-  sourceHandle?: string;
-  targetHandle?: string;
-  type?: string;
-}
-
-// Helper function to get label text by language
-export function getLabelText(labels: { language: string; text: string }[], language: string): string {
-  const label = labels.find(l => l.language === language);
-  return label ? label.text : labels[0]?.text || 'Unnamed';
-}
-
-export function buildTreeFromCategories(categories: CategoryNode[], language: string = 'us') {
+export function buildTreeFromCategories(categories: CategoryNode[], language: string = DEFAULT_LANGUAGE) {
   const nodes: TreeNode[] = [];
   const edges: TreeEdge[] = [];
   
@@ -47,17 +23,22 @@ export function buildTreeFromCategories(categories: CategoryNode[], language: st
   });
   
   // Calculate positions and create nodes
-  const levelWidth = 300;
-  const levelHeight = 100;
-  
   function addNodesAtLevel(parentCode: string | null, level: number, startX: number) {
     const parent = parentCode || 'root';
     const children = childrenByParent.get(parent) || [];
     
     if (children.length === 0) return;
     
-    const totalWidth = children.length * levelWidth;
-    const startPosX = startX - totalWidth / 2 + levelWidth / 2;
+    // Sort children by their stored x position if available, otherwise by code
+    children.sort((a, b) => {
+      if (a.position && b.position) {
+        return a.position.x - b.position.x;
+      }
+      return a.code.localeCompare(b.code);
+    });
+    
+    const totalWidth = children.length * SIBLING_SPACING;
+    const startPosX = startX - totalWidth / 2 + SIBLING_SPACING / 2;
     
     children.forEach((child, index) => {
       // Use stored position if available, otherwise calculate new position
@@ -67,8 +48,8 @@ export function buildTreeFromCategories(categories: CategoryNode[], language: st
         x = child.position.x;
         y = child.position.y;
       } else {
-        x = startPosX + index * levelWidth;
-        y = level * levelHeight;
+        x = startPosX + index * SIBLING_SPACING;
+        y = level * LEVEL_HEIGHT;
       }
       
       // Create node
@@ -92,7 +73,7 @@ export function buildTreeFromCategories(categories: CategoryNode[], language: st
           target: child.code,
           sourceHandle: 'bottom',
           targetHandle: 'top',
-          type: 'smoothstep',
+          type: 'bezier',
         };
         edges.push(edge);
       }

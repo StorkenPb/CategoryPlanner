@@ -15,24 +15,33 @@ export const sampleCategories: CategoryNode[] = [
   { 
     code: 'electronics', 
     labels: [
-      { language: 'us', text: 'Electronics' },
-      { language: 'se', text: 'Elektronik' }
+      { language: 'en', text: 'Electronics' },
+      { language: 'sv', text: 'Elektronik' },
+      { language: 'de', text: 'Elektronik' },
+      { language: 'fr', text: 'Électronique' },
+      { language: 'es', text: 'Electrónica' }
     ], 
     parent: undefined 
   },
   { 
     code: 'clothing', 
     labels: [
-      { language: 'us', text: 'Clothing' },
-      { language: 'se', text: 'Kläder' }
+      { language: 'en', text: 'Clothing' },
+      { language: 'sv', text: 'Kläder' },
+      { language: 'de', text: 'Kleidung' },
+      { language: 'fr', text: 'Vêtements' },
+      { language: 'es', text: 'Ropa' }
     ], 
     parent: undefined 
   },
   { 
     code: 'home', 
     labels: [
-      { language: 'us', text: 'Home & Garden' },
-      { language: 'se', text: 'Hem & Trädgård' }
+      { language: 'en', text: 'Home & Garden' },
+      { language: 'sv', text: 'Hem & Trädgård' },
+      { language: 'de', text: 'Haus & Garten' },
+      { language: 'fr', text: 'Maison & Jardin' },
+      { language: 'es', text: 'Hogar & Jardín' }
     ], 
     parent: undefined 
   },
@@ -41,24 +50,33 @@ export const sampleCategories: CategoryNode[] = [
   { 
     code: 'phones', 
     labels: [
-      { language: 'us', text: 'Phones' },
-      { language: 'se', text: 'Telefoner' }
+      { language: 'en', text: 'Phones' },
+      { language: 'sv', text: 'Telefoner' },
+      { language: 'de', text: 'Telefone' },
+      { language: 'fr', text: 'Téléphones' },
+      { language: 'es', text: 'Teléfonos' }
     ], 
     parent: 'electronics' 
   },
   { 
     code: 'computers', 
     labels: [
-      { language: 'us', text: 'Computers' },
-      { language: 'se', text: 'Datorer' }
+      { language: 'en', text: 'Computers' },
+      { language: 'sv', text: 'Datorer' },
+      { language: 'de', text: 'Computer' },
+      { language: 'fr', text: 'Ordinateurs' },
+      { language: 'es', text: 'Computadoras' }
     ], 
     parent: 'electronics' 
   },
   { 
     code: 'audio', 
     labels: [
-      { language: 'us', text: 'Audio & Video' },
-      { language: 'se', text: 'Ljud & Bild' }
+      { language: 'en', text: 'Audio & Video' },
+      { language: 'sv', text: 'Ljud & Bild' },
+      { language: 'de', text: 'Audio & Video' },
+      { language: 'fr', text: 'Audio & Vidéo' },
+      { language: 'es', text: 'Audio & Video' }
     ], 
     parent: 'electronics' 
   },
@@ -67,16 +85,22 @@ export const sampleCategories: CategoryNode[] = [
   { 
     code: 'smartphones', 
     labels: [
-      { language: 'us', text: 'Smartphones' },
-      { language: 'se', text: 'Smartphones' }
+      { language: 'en', text: 'Smartphones' },
+      { language: 'sv', text: 'Smartphones' },
+      { language: 'de', text: 'Smartphones' },
+      { language: 'fr', text: 'Smartphones' },
+      { language: 'es', text: 'Smartphones' }
     ], 
     parent: 'phones' 
   },
   { 
     code: 'accessories', 
     labels: [
-      { language: 'us', text: 'Phone Accessories' },
-      { language: 'se', text: 'Telefonaccessoarer' }
+      { language: 'en', text: 'Phone Accessories' },
+      { language: 'sv', text: 'Telefonaccessoarer' },
+      { language: 'de', text: 'Telefonzubehör' },
+      { language: 'fr', text: 'Accessoires téléphone' },
+      { language: 'es', text: 'Accesorios telefónicos' }
     ], 
     parent: 'phones' 
   },
@@ -85,24 +109,33 @@ export const sampleCategories: CategoryNode[] = [
   { 
     code: 'laptops', 
     labels: [
-      { language: 'us', text: 'Laptops' },
-      { language: 'se', text: 'Bärbara datorer' }
+      { language: 'en', text: 'Laptops' },
+      { language: 'sv', text: 'Bärbara datorer' },
+      { language: 'de', text: 'Laptops' },
+      { language: 'fr', text: 'Ordinateurs portables' },
+      { language: 'es', text: 'Laptops' }
     ], 
     parent: 'computers' 
   },
   { 
     code: 'desktops', 
     labels: [
-      { language: 'us', text: 'Desktop Computers' },
-      { language: 'se', text: 'Stationära datorer' }
+      { language: 'en', text: 'Desktop Computers' },
+      { language: 'sv', text: 'Stationära datorer' },
+      { language: 'de', text: 'Desktop-Computer' },
+      { language: 'fr', text: 'Ordinateurs de bureau' },
+      { language: 'es', text: 'Computadoras de escritorio' }
     ], 
     parent: 'computers' 
   },
   { 
     code: 'components', 
     labels: [
-      { language: 'us', text: 'Computer Components' },
-      { language: 'se', text: 'Datorkomponenter' }
+      { language: 'en', text: 'Computer Components' },
+      { language: 'sv', text: 'Datorkomponenter' },
+      { language: 'de', text: 'Computer-Komponenten' },
+      { language: 'fr', text: 'Composants informatiques' },
+      { language: 'es', text: 'Componentes de computadora' }
     ], 
     parent: 'computers' 
   },
@@ -111,24 +144,33 @@ export const sampleCategories: CategoryNode[] = [
   { 
     code: 'mens', 
     labels: [
-      { language: 'us', text: "Men's Clothing" },
-      { language: 'se', text: 'Herrkläder' }
+      { language: 'en', text: "Men's Clothing" },
+      { language: 'sv', text: 'Herrkläder' },
+      { language: 'de', text: 'Herrenkleidung' },
+      { language: 'fr', text: 'Vêtements hommes' },
+      { language: 'es', text: 'Ropa de hombre' }
     ], 
     parent: 'clothing' 
   },
   { 
     code: 'womens', 
     labels: [
-      { language: 'us', text: "Women's Clothing" },
-      { language: 'se', text: 'Damkläder' }
+      { language: 'en', text: "Women's Clothing" },
+      { language: 'sv', text: 'Damkläder' },
+      { language: 'de', text: 'Damenkleidung' },
+      { language: 'fr', text: 'Vêtements femmes' },
+      { language: 'es', text: 'Ropa de mujer' }
     ], 
     parent: 'clothing' 
   },
   { 
     code: 'kids', 
     labels: [
-      { language: 'us', text: "Kids' Clothing" },
-      { language: 'se', text: 'Barnkläder' }
+      { language: 'en', text: "Kids' Clothing" },
+      { language: 'sv', text: 'Barnkläder' },
+      { language: 'de', text: 'Kinderkleidung' },
+      { language: 'fr', text: 'Vêtements enfants' },
+      { language: 'es', text: 'Ropa infantil' }
     ], 
     parent: 'clothing' 
   },
@@ -137,24 +179,33 @@ export const sampleCategories: CategoryNode[] = [
   { 
     code: 'furniture', 
     labels: [
-      { language: 'us', text: 'Furniture' },
-      { language: 'se', text: 'Möbler' }
+      { language: 'en', text: 'Furniture' },
+      { language: 'sv', text: 'Möbler' },
+      { language: 'de', text: 'Möbel' },
+      { language: 'fr', text: 'Meubles' },
+      { language: 'es', text: 'Muebles' }
     ], 
     parent: 'home' 
   },
   { 
     code: 'kitchen', 
     labels: [
-      { language: 'us', text: 'Kitchen & Dining' },
-      { language: 'se', text: 'Kök & Matsal' }
+      { language: 'en', text: 'Kitchen & Dining' },
+      { language: 'sv', text: 'Kök & Matsal' },
+      { language: 'de', text: 'Küche & Esszimmer' },
+      { language: 'fr', text: 'Cuisine & Salle à manger' },
+      { language: 'es', text: 'Cocina & Comedor' }
     ], 
     parent: 'home' 
   },
   { 
     code: 'garden', 
     labels: [
-      { language: 'us', text: 'Garden' },
-      { language: 'se', text: 'Trädgård' }
+      { language: 'en', text: 'Garden' },
+      { language: 'sv', text: 'Trädgård' },
+      { language: 'de', text: 'Garten' },
+      { language: 'fr', text: 'Jardin' },
+      { language: 'es', text: 'Jardín' }
     ], 
     parent: 'home' 
   },

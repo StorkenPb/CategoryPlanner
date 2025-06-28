@@ -138,3 +138,12 @@ a code is a string (often the english version using lowercase and underscode (_)
 the list of labels, needs at least one, are the visual name of the category for a given language
 
 The parent is optional but connects any node to another parent node using the code as the referrence.
+
+## CSV Export
+
+
+example
+
+code;label-en_US;label-sv_SE;parent
+electronics;Electronics;Elektronik;
+phones;Phones;Telefoner;electronics

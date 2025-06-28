@@ -15,7 +15,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { sampleCategories } from '../data/sampleCategories';
-import { buildTreeFromCategories } from '../utils/treeUtils';
+import { buildTreeFromCategories } from '../utils/treeBuilder';
 import EditableNode from './EditableNode';
 import InfoPanel from './InfoPanel';
 import { useTreeOperations } from '../hooks/useTreeOperations';
@@ -114,7 +114,7 @@ const CategoryTreeInner: React.FC = () => {
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
-      <InfoPanel selectedNode={selectedNode} />
+      <InfoPanel selectedNode={selectedNode} categories={categories} />
       
       <ReactFlow
         nodes={nodes}
