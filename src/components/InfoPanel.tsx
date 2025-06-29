@@ -84,13 +84,13 @@ const InfoPanel: React.FC = () => {
   const descendantsCount = selectedNode ? getDescendantsCount(selectedNode) : 0;
 
   return (
-    <div className="absolute top-4 right-4 z-10 bg-white p-6 rounded-lg shadow-lg max-w-sm">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">Category Tree</h2>
+    <div className="absolute top-4 right-4 z-10 bg-gray-900 p-6 rounded-lg shadow-lg max-w-sm">
+      <h2 className="text-xl font-bold mb-4 text-gray-100">Category Tree</h2>
       
       {/* Statistics */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Statistics</h3>
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+      <div className="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
+        <h3 className="text-sm font-semibold text-gray-300 mb-2">Statistics</h3>
+        <div className="grid grid-cols-2 gap-2 text-xs text-gray-100">
           <div>Total nodes: <span className="font-medium">{totalNodes}</span></div>
           <div>Root nodes: <span className="font-medium">{rootNodes}</span></div>
           <div>Leaf nodes: <span className="font-medium">{leafNodes}</span></div>
@@ -108,9 +108,9 @@ const InfoPanel: React.FC = () => {
 
       {/* Selected Node Details */}
       {selectedNodeData ? (
-        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-sm font-semibold text-blue-800 mb-2">Selected Node</h3>
-          <div className="space-y-1 text-xs">
+        <div className="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
+          <h3 className="text-sm font-semibold text-blue-300 mb-2">Selected Node</h3>
+          <div className="space-y-1 text-xs text-gray-100">
             <div><span className="font-medium">Code:</span> {selectedNodeData.code}</div>
             <div><span className="font-medium">Name:</span> {selectedNodeData.labels.find(l => l.language === 'en')?.text || 'N/A'}</div>
             <div><span className="font-medium">Parent:</span> {selectedNodeData.parent || 'Root'}</div>
@@ -120,15 +120,15 @@ const InfoPanel: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="text-sm text-gray-600">No node selected</div>
+        <div className="mb-4 p-3 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="text-sm text-gray-400">No node selected</div>
         </div>
       )}
 
       {/* Keyboard Shortcuts */}
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Keyboard Shortcuts</h3>
-        <div className="text-xs text-gray-600 space-y-1">
+        <h3 className="text-sm font-semibold text-gray-300 mb-2">Keyboard Shortcuts</h3>
+        <div className="text-xs text-gray-300 space-y-1">
           <div className="flex justify-between">
             <span>Double-click:</span>
             <span className="font-medium">Edit node</span>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CategoryNode } from '../data/sampleCategories';
 import { useCategoryStore } from '../stores/categoryStore';
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 
 const EditorPanel: React.FC = () => {
   const [textContent, setTextContent] = useState('');
@@ -8,6 +9,7 @@ const EditorPanel: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [minimized, setMinimized] = useState(false);
 
   // Zustand store subscriptions
   const { 
@@ -464,45 +466,57 @@ const EditorPanel: React.FC = () => {
   };
 
   return (
-    <div className="absolute top-4 left-4 z-10 bg-white p-6 rounded-lg shadow-lg w-96 max-h-[90vh] overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
+    <div className={`absolute top-4 left-4 z-10 bg-gray-900 rounded-lg shadow-lg w-96 overflow-hidden flex flex-col transition-all duration-300 ${minimized ? 'h-14 py-2 px-6' : 'h-[calc(100vh-2rem-40px)] py-6 px-6'}`}>
+      <div className="flex items-center justify-between mb-0 min-h-[2.5rem]">
         <div className="flex items-center space-x-2">
-          <h2 className="text-xl font-bold text-gray-800">List Editor</h2>
+          <button
+            onClick={() => setMinimized(!minimized)}
+            className="p-1 rounded hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={minimized ? 'Expand List Editor' : 'Minimize List Editor'}
+          >
+            {minimized ? (
+              <ChevronDownIcon className="w-5 h-5 text-gray-300" />
+            ) : (
+              <ChevronUpIcon className="w-5 h-5 text-gray-300" />
+            )}
+          </button>
+          <h2 className="text-xl font-bold text-gray-100">Editor (experimental)</h2>
           <div className={`flex items-center space-x-1 text-xs ${
             isSynced ? 'text-green-600' : 'text-orange-600'
           }`}>
             <div className={`w-2 h-2 rounded-full ${
               isSynced ? 'bg-green-500' : 'bg-orange-500'
             }`}></div>
-            <span>{isSynced ? 'Synced' : 'Modified'}</span>
+            <span>{isSynced ? 'Live' : 'Modified'}</span>
           </div>
         </div>
       </div>
-      
-      <div className="text-xs text-gray-600 mb-3">
-        <div>• Enter: New line with bullet</div>
-        <div>• Tab: Increase indentation</div>
-        <div>• Shift+Tab: Decrease indentation</div>
-        <div>• {isEditing ? 'Editing...' : 'Live updates to visual tree'}</div>
-      </div>
-      
-      <div className="border border-gray-300 rounded-lg overflow-hidden">
-        <textarea
-          ref={textareaRef}
-          value={textContent}
-          onChange={handleTextChange}
-          onKeyDown={handleKeyDown}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          className="w-full h-80 p-3 text-sm font-mono border-0 resize-none focus:outline-none focus:ring-0"
-          placeholder="Enter category hierarchy with bullet points..."
-          spellCheck={false}
-        />
-      </div>
-      
-      <div className="mt-3 text-xs text-gray-500">
-        {categories.length} categories
-      </div>
+      {!minimized && (
+        <>
+          <div className="text-xs text-gray-300 mb-3">
+            <div>• Enter: New line with bullet</div>
+            <div>• Tab: Increase indentation</div>
+            <div>• Shift+Tab: Decrease indentation</div>
+            <div>• {isEditing ? 'Editing...' : 'Live updates to visual tree'}</div>
+          </div>
+          <div className="border border-gray-300 rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+            <textarea
+              ref={textareaRef}
+              value={textContent}
+              onChange={handleTextChange}
+              onKeyDown={handleKeyDown}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              className="w-full h-full min-h-0 p-3 text-sm font-mono border-0 resize-none focus:outline-none focus:ring-0 bg-gray-900 text-gray-100"
+              placeholder="Enter category hierarchy with bullet points..."
+              spellCheck={false}
+            />
+          </div>
+          <div className="mt-3 text-xs text-gray-500">
+            {categories.length} categories
+          </div>
+        </>
+      )}
     </div>
   );
 };

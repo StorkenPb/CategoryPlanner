@@ -107,9 +107,9 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
 
   return (
     <div
-      className={`px-4 py-3 border-2 rounded-lg shadow-md bg-white cursor-pointer transition-all duration-200 hover:shadow-lg ${
+      className={`px-4 py-3 border-2 rounded-lg shadow-md bg-gray-900 cursor-pointer transition-all duration-200 hover:shadow-lg ${
         selected 
-          ? 'border-blue-500 bg-blue-50 shadow-blue-200' 
+          ? 'border-blue-500' 
           : 'border-gray-300 hover:border-gray-400'
       }`}
       onDoubleClick={handleDoubleClick}
@@ -134,7 +134,7 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
           placeholder="Enter category name..."
         />
       ) : (
-        <div className="font-medium text-gray-800 text-center min-w-[80px]">
+        <div className="font-medium text-gray-100 text-center min-w-[80px]">
           {data.label || 'Unnamed Category'}
         </div>
       )}
