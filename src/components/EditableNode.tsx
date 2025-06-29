@@ -29,6 +29,7 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(data.label);
   const inputRef = useRef<HTMLInputElement>(null);
+  const wasTriggeredExternally = useRef(false);
 
   // Update node internals when component mounts
   useEffect(() => {
@@ -45,6 +46,7 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
   // Handle external edit trigger
   useEffect(() => {
     if (data.triggerEdit && !isEditing) {
+      wasTriggeredExternally.current = true;
       setIsEditing(true);
       const initialValue = data.initialEditValue || data.label;
       setEditValue(initialValue);
@@ -53,7 +55,9 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
-          inputRef.current.select();
+          // Position cursor at the end instead of selecting all text
+          const length = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(length, length);
         }
         // Clear the trigger
         data.clearEditTrigger?.(id);
@@ -62,6 +66,7 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
   }, [data.triggerEdit, data.initialEditValue, data.label, isEditing, data.clearEditTrigger, id]);
 
   const handleDoubleClick = () => {
+    wasTriggeredExternally.current = false;
     setIsEditing(true);
     setEditValue(data.label);
   };
@@ -71,11 +76,13 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
       data.onLabelChange?.(id, editValue.trim());
     }
     setIsEditing(false);
+    wasTriggeredExternally.current = false;
   };
 
   const handleCancel = () => {
     setEditValue(data.label);
     setIsEditing(false);
+    wasTriggeredExternally.current = false;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -91,7 +98,10 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      // Only select all text when NOT triggered externally (i.e., double-click)
+      if (!wasTriggeredExternally.current) {
+        inputRef.current.select();
+      }
     }
   }, [isEditing]);
 
@@ -140,4 +150,4 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
   );
 };
 
-export default EditableNode; 
+export default EditableNode;

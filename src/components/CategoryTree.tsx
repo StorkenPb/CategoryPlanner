@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -54,6 +54,7 @@ const CategoryTreeInner: React.FC = () => {
   
   const [nodes, setNodes, onNodesChange] = useNodesState([] as any[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
+  const isUpdatingSelection = useRef(false);
 
   // Function to clear edit trigger after it's been handled
   const clearEditTrigger = useCallback((nodeId: string) => {
@@ -345,6 +346,22 @@ const CategoryTreeInner: React.FC = () => {
       );
     }
   }, [selectedNode, nodes.length, setNodes]);
+
+  // Restore selection after category changes (like label updates)
+  useEffect(() => {
+    if (selectedNode && nodes.length > 0) {
+      // Check if the selected node exists in the current nodes
+      const selectedNodeExists = nodes.some(node => node.id === selectedNode);
+      if (selectedNodeExists) {
+        setNodes((prevNodes: any[]) =>
+          prevNodes.map((node: any) => ({
+            ...node,
+            selected: node.id === selectedNode
+          }))
+        );
+      }
+    }
+  }, [categories, selectedNode, nodes.length, setNodes]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
