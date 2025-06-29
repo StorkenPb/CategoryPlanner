@@ -3,6 +3,8 @@ import { CategoryNode } from '../data/sampleCategories';
 import { useCategoryStore } from '../stores/categoryStore';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 
+const WIDTHS = [320, 384, 448, 512, 576, 640]; // px, matches Tailwind w-80, w-96, etc.
+
 const EditorPanel: React.FC = () => {
   const [textContent, setTextContent] = useState('');
   const [isSynced, setIsSynced] = useState(true);
@@ -10,6 +12,9 @@ const EditorPanel: React.FC = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [minimized, setMinimized] = useState(false);
+  const [widthIndex, setWidthIndex] = useState(1); // default to 384px (w-96)
+  const [isResizing, setIsResizing] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Zustand store subscriptions
   const { 
@@ -465,8 +470,53 @@ const EditorPanel: React.FC = () => {
     }
   };
 
+  // Handle drag events for resizing
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    document.body.style.cursor = 'ew-resize';
+  };
+  const stopResize = () => {
+    setIsResizing(false);
+    document.body.style.cursor = '';
+  };
+  const handleResize = useCallback((e: MouseEvent) => {
+    if (!isResizing || !panelRef.current) return;
+    const rect = panelRef.current.getBoundingClientRect();
+    const mouseX = e.clientX;
+    const minLeft = rect.left + 200; // min width 200px
+    const maxLeft = rect.left + 700; // max width 700px
+    let newWidth = Math.max(200, Math.min(mouseX - rect.left, 700));
+    // Snap to nearest WIDTHS
+    let closest = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < WIDTHS.length; i++) {
+      const diff = Math.abs(WIDTHS[i] - newWidth);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = i;
+      }
+    }
+    setWidthIndex(closest);
+  }, [isResizing]);
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', handleResize);
+      window.addEventListener('mouseup', stopResize);
+      return () => {
+        window.removeEventListener('mousemove', handleResize);
+        window.removeEventListener('mouseup', stopResize);
+      };
+    }
+  }, [isResizing, handleResize]);
+
   return (
-    <div className={`absolute top-4 left-4 z-10 bg-gray-900 rounded-lg shadow-lg w-96 overflow-hidden flex flex-col transition-all duration-300 ${minimized ? 'h-14 py-2 px-6' : 'h-[calc(100vh-2rem-40px)] py-6 px-6'}`}>
+    <div
+      ref={panelRef}
+      className={`absolute top-4 left-4 z-10 bg-gray-900 rounded-lg shadow-lg overflow-hidden flex flex-col transition-all duration-300 ${minimized ? 'h-14 py-2 px-6' : 'h-[calc(100vh-2rem-40px)] py-6 px-6'}`}
+      style={{ width: WIDTHS[widthIndex] }}
+    >
       <div className="flex items-center justify-between mb-0 min-h-[2.5rem]">
         <div className="flex items-center space-x-2">
           <button
@@ -516,6 +566,17 @@ const EditorPanel: React.FC = () => {
             {categories.length} categories
           </div>
         </>
+      )}
+      {/* Resize handle */}
+      {!minimized && (
+        <div
+          onMouseDown={startResize}
+          title="Resize panel"
+          className="absolute top-0 right-0 h-full w-8 flex items-center justify-center cursor-ew-resize z-50 group"
+          style={{ marginRight: '-8px' }}
+        >
+          <div className="w-1 h-16 bg-gray-600 rounded-full opacity-80 group-hover:bg-gray-300 group-hover:opacity-100 transition-all" />
+        </div>
       )}
     </div>
   );
