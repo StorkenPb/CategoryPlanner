@@ -79,10 +79,40 @@ export const useTreeOperations = (categories: CategoryNode[], setCategories: (ca
     );
   }, [categories, setCategories]);
 
+  // Function to remove a node and all its descendants
+  const removeNode = useCallback((nodeId: string) => {
+    // Get all descendants of the node to be removed
+    const getAllDescendants = (targetNodeId: string): string[] => {
+      const descendants: string[] = [];
+      const queue = [targetNodeId];
+      
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        const children = categories.filter(cat => cat.parent === currentId);
+        
+        children.forEach(child => {
+          descendants.push(child.code);
+          queue.push(child.code);
+        });
+      }
+      
+      return descendants;
+    };
+
+    const descendants = getAllDescendants(nodeId);
+    const nodesToRemove = [nodeId, ...descendants];
+    
+    // Remove the node and all its descendants
+    setCategories(categories.filter(category => !nodesToRemove.includes(category.code)));
+    
+    return nodeId;
+  }, [categories, setCategories]);
+
   return {
     generateUID,
     addSiblingNode,
     addChildNode,
     handleLabelChange,
+    removeNode,
   };
 }; 

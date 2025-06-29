@@ -97,14 +97,14 @@ This tool will help e-commerce sellers (new or existing) plan, build, and visual
 
 ### 🚀 MVP
 
-- [ ] Represent category hierarchy as an internal object
-- [ ] Visualize category hierarchy as a tree
-- [ ] Rename/edit category nodes
-- [ ] Add new category nodes using visual components and keyboard
+- [x] Represent category hierarchy as an internal object
+- [x] Visualize category hierarchy as a tree
+- [x] Rename/edit category nodes
+- [x] Add new category nodes using visual components and keyboard
 - [ ] Remove category nodes
 - [ ] Select node to view/edit details (name, metadata)
-- [ ] Export category tree to CSV (using json2csv)
-- [ ] Import category tree from CSV
+- [x] Export category tree to CSV (using json2csv)
+- [x] Import category tree from CSV
 
 ### 🔮 Future features
 
@@ -142,7 +142,7 @@ The parent is optional but connects any node to another parent node using the co
 ## CSV Export
 
 
-example
+Example
 
 code;label-en_US;label-sv_SE;parent
 electronics;Electronics;Elektronik;

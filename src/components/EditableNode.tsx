@@ -68,8 +68,10 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
 
   return (
     <div
-      className={`px-4 py-2 border-2 rounded-lg shadow-md bg-white cursor-pointer ${
-        selected ? 'border-blue-500' : 'border-gray-300'
+      className={`px-4 py-3 border-2 rounded-lg shadow-md bg-white cursor-pointer transition-all duration-200 hover:shadow-lg ${
+        selected 
+          ? 'border-blue-500 bg-blue-50 shadow-blue-200' 
+          : 'border-gray-300 hover:border-gray-400'
       }`}
       onDoubleClick={handleDoubleClick}
     >
@@ -77,7 +79,8 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
         type="target"
         position={Position.Top}
         id="top"
-        style={{ background: '#555' }}
+        className="w-3 h-3 bg-gray-400 hover:bg-gray-600 transition-colors"
+        style={{ background: selected ? '#3B82F6' : '#9CA3AF' }}
       />
       
       {isEditing ? (
@@ -88,17 +91,21 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="w-full px-2 py-1 border border-gray-400 rounded focus:outline-none focus:border-blue-500"
+          className="w-full px-2 py-1 border border-blue-400 rounded focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm font-medium"
+          placeholder="Enter category name..."
         />
       ) : (
-        <div className="font-medium text-gray-800">{data.label}</div>
+        <div className="font-medium text-gray-800 text-center min-w-[80px]">
+          {data.label || 'Unnamed Category'}
+        </div>
       )}
       
       <Handle
         type="source"
         position={Position.Bottom}
         id="bottom"
-        style={{ background: '#555' }}
+        className="w-3 h-3 bg-gray-400 hover:bg-gray-600 transition-colors"
+        style={{ background: selected ? '#3B82F6' : '#9CA3AF' }}
       />
     </div>
   );

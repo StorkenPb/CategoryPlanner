@@ -19,6 +19,7 @@ import { CategoryNode } from '../data/sampleCategories';
 import { buildTreeFromCategories, buildTreeFromCategoriesAsync } from '../utils/treeBuilder';
 import EditableNode from './EditableNode';
 import InfoPanel from './InfoPanel';
+import Toast from './Toast';
 import { useTreeOperations } from '../hooks/useTreeOperations';
 import { useNodeMovement } from '../hooks/useNodeMovement';
 
@@ -31,12 +32,26 @@ const CategoryTreeInner: React.FC = () => {
   const [categories, setCategories] = useState(sampleCategories);
   const [isLoading, setIsLoading] = useState(false);
   const [buildProgress, setBuildProgress] = useState(0);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false
+  });
   
   useEffect(() => {
   }, [categories]);
   
   // Custom hooks
-  const { addSiblingNode, addChildNode, handleLabelChange } = useTreeOperations(categories, setCategories);
+  const { addSiblingNode, addChildNode, handleLabelChange, removeNode } = useTreeOperations(categories, setCategories);
+  
+  // Helper function to show toast notifications
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type, isVisible: true });
+  }, []);
+
+  const closeToast = useCallback(() => {
+    setToast(prev => ({ ...prev, isVisible: false }));
+  }, []);
   
   // Create a stable reference for category structure (excluding positions)
   const categoryStructure = useMemo(() => {
@@ -235,11 +250,26 @@ const CategoryTreeInner: React.FC = () => {
         break;
       case 'Delete':
         event.preventDefault();
-        // TODO: Remove node
-        console.log('Remove node:', selectedNode);
+        if (selectedNode) {
+          const selectedNodeData = categories.find(cat => cat.code === selectedNode);
+          const childrenCount = categories.filter(cat => cat.parent === selectedNode).length;
+          
+          let message = `Are you sure you want to delete "${selectedNodeData?.labels.find(l => l.language === 'en')?.text || selectedNode}"?`;
+          if (childrenCount > 0) {
+            message += `\n\nThis will also delete ${childrenCount} child category${childrenCount > 1 ? 'ies' : 'y'} and all their descendants.`;
+          }
+          
+          if (confirm(message)) {
+            const removedNodeId = removeNode(selectedNode);
+            if (removedNodeId) {
+              setSelectedNode(null); // Clear selection after deletion
+              showToast(`Category "${selectedNodeData?.labels.find(l => l.language === 'en')?.text || selectedNode}" deleted successfully!`, 'success');
+            }
+          }
+        }
         break;
     }
-  }, [selectedNode, addSiblingNode, addChildNode]);
+  }, [selectedNode, addSiblingNode, addChildNode, removeNode, categories, showToast]);
 
   // Update ReactFlow's selection state when selectedNode changes
   useEffect(() => {
@@ -273,6 +303,14 @@ const CategoryTreeInner: React.FC = () => {
         selectedNode={selectedNode} 
         categories={categories} 
         onImport={handleImport}
+        onShowToast={showToast}
+      />
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={closeToast}
       />
       
       {isLoading && (
