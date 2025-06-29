@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CategoryNode } from '../data/sampleCategories';
-import { useTreeOperations } from '../hooks/useTreeOperations';
+import { useCategoryStore } from '../stores/categoryStore';
 
-interface EditorPanelProps {
-  categories: CategoryNode[];
-  selectedNode: string | null;
-  onCategoriesChange: (categories: CategoryNode[]) => void;
-  onNodeSelect: (nodeId: string | null) => void;
-}
-
-const EditorPanel: React.FC<EditorPanelProps> = ({ 
-  categories, 
-  selectedNode, 
-  onCategoriesChange, 
-  onNodeSelect 
-}) => {
+const EditorPanel: React.FC = () => {
   const [textContent, setTextContent] = useState('');
   const [isSynced, setIsSynced] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Use the tree operations hook for reliable node operations
-  const { addSiblingNode, addChildNode, handleLabelChange, removeNode } = useTreeOperations(categories, onCategoriesChange);
+  // Zustand store subscriptions
+  const { 
+    categories, 
+    selectedNode, 
+    setCategories, 
+    setSelectedNode,
+    addSiblingNode,
+    addChildNode,
+    handleLabelChange,
+    removeNode
+  } = useCategoryStore();
 
   // Convert categories to text representation with bullet points
   const categoriesToText = (cats: CategoryNode[]): string => {
@@ -218,7 +215,7 @@ const EditorPanel: React.FC<EditorPanelProps> = ({
     if (structureChanged) {
       try {
         const newCategories = textToCategories(newText);
-        onCategoriesChange(newCategories);
+        setCategories(newCategories);
       } catch (error) {
         console.error('Error parsing text:', error);
       }
@@ -256,10 +253,10 @@ const EditorPanel: React.FC<EditorPanelProps> = ({
           });
         });
         
-        onCategoriesChange(updatedCategories);
+        setCategories(updatedCategories);
       }
     }
-  }, [categories, onCategoriesChange]);
+  }, [categories, setCategories]);
 
   // Helper function to find the parent of the changed subtree
   const findChangedSubtreeParent = (oldStructure: Array<{ text: string; level: number; index: number }>, 
@@ -354,7 +351,7 @@ const EditorPanel: React.FC<EditorPanelProps> = ({
 
   const handleFocus = () => {
     // Clear node selection when list editor is focused
-    onNodeSelect(null);
+    setSelectedNode(null);
     setIsEditing(true);
   };
 

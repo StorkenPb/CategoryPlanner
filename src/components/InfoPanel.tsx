@@ -2,22 +2,19 @@ import React, { useRef, useState } from 'react';
 import { CategoryNode } from '../data/sampleCategories';
 import { exportToCSV, downloadCSV } from '../utils/exportUtils';
 import { handleFileUpload, ImportResult } from '../utils/importUtils';
+import { useCategoryStore } from '../stores/categoryStore';
 
-interface InfoPanelProps {
-  selectedNode: string | null;
-  categories: CategoryNode[];
-  onImport: (categories: CategoryNode[]) => void;
-  onShowToast?: (message: string, type: 'success' | 'error' | 'info') => void;
-}
-
-const InfoPanel: React.FC<InfoPanelProps> = ({ selectedNode, categories, onImport, onShowToast }) => {
+const InfoPanel: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+  
+  // Zustand store subscriptions
+  const { categories, selectedNode, showToast, setCategories } = useCategoryStore();
 
   const handleExportCSV = () => {
     const csvContent = exportToCSV(categories);
     downloadCSV(csvContent, 'categories.csv');
-    onShowToast?.('Categories exported successfully!', 'success');
+    showToast('Categories exported successfully!', 'success');
   };
 
   const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,29 +28,29 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ selectedNode, categories, onImpor
       
       if (result.success) {
         // Show success message
-        onShowToast?.(`Import successful! Imported ${result.categories.length} categories.`, 'success');
+        showToast(`Import successful! Imported ${result.categories.length} categories.`, 'success');
         
         // Show warnings if any
         if (result.warnings.length > 0) {
           console.warn('Import warnings:', result.warnings);
-          onShowToast?.(`Import completed with ${result.warnings.length} warning(s). Check console for details.`, 'info');
+          showToast(`Import completed with ${result.warnings.length} warning(s). Check console for details.`, 'info');
         }
         
         // Replace current categories with imported ones
         try {
-          onImport(result.categories);
+          setCategories(result.categories);
         } catch (error) {
-          console.error('❌ Error in onImport callback:', error);
+          console.error('❌ Error in setCategories callback:', error);
           throw error;
         }
       } else {
         // Show error message
         const errorMessage = result.errors.join('\n');
-        onShowToast?.(`Import failed: ${errorMessage}`, 'error');
+        showToast(`Import failed: ${errorMessage}`, 'error');
       }
     } catch (error) {
       console.error('❌ Import error:', error);
-      onShowToast?.(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      showToast(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     } finally {
       setIsImporting(false);
     }

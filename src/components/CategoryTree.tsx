@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -14,42 +14,43 @@ import {
   NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { sampleCategories } from '../data/sampleCategories';
-import { CategoryNode } from '../data/sampleCategories';
 import { buildTreeFromCategories, buildTreeFromCategoriesAsync } from '../utils/treeBuilder';
 import EditableNode from './EditableNode';
 import InfoPanel from './InfoPanel';
 import EditorPanel from './EditorPanel';
 import Toast from './Toast';
-import { useTreeOperations } from '../hooks/useTreeOperations';
-import { useNodeMovement } from '../hooks/useNodeMovement';
+import { useCategoryStore } from '../stores/categoryStore';
+import { useNodeMovementStore } from '../stores/nodeMovementStore';
 
 const nodeTypes: NodeTypes = {
   editableNode: EditableNode,
 };
 
 const CategoryTreeInner: React.FC = () => {
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [categories, setCategories] = useState(sampleCategories);
-  const [isLoading, setIsLoading] = useState(false);
-  const [buildProgress, setBuildProgress] = useState(0);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
-    message: '',
-    type: 'info',
-    isVisible: false
-  });
-  
-  // Custom hooks
-  const { addSiblingNode, addChildNode, handleLabelChange, removeNode } = useTreeOperations(categories, setCategories);
-  
-  // Helper function to show toast notifications
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    setToast({ message, type, isVisible: true });
-  }, []);
+  // Zustand store subscriptions
+  const {
+    categories,
+    selectedNode,
+    isLoading,
+    buildProgress,
+    toast,
+    setSelectedNode,
+    setLoading,
+    setBuildProgress,
+    showToast,
+    closeToast,
+    addSiblingNode,
+    addChildNode,
+    handleLabelChange,
+    removeNode,
+    setCategories,
+  } = useCategoryStore();
 
-  const closeToast = useCallback(() => {
-    setToast(prev => ({ ...prev, isVisible: false }));
-  }, []);
+  const {
+    onNodeDragStart,
+    onNodeDrag,
+    onNodeDragStop,
+  } = useNodeMovementStore();
   
   const [nodes, setNodes, onNodesChange] = useNodesState([] as any[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
@@ -96,7 +97,7 @@ const CategoryTreeInner: React.FC = () => {
   // Initialize tree on first render
   useEffect(() => {
     if (categories.length > 50) {
-      setIsLoading(true);
+      setLoading(true);
       setBuildProgress(0);
       
       // Build the complete tree first (this is fast since we're not updating ReactFlow yet)
@@ -162,7 +163,7 @@ const CategoryTreeInner: React.FC = () => {
           setTimeout(displayBatch, 16); // ~60fps
         } else {
           // All batches displayed
-          setIsLoading(false);
+          setLoading(false);
           setBuildProgress(0);
         }
       };
@@ -198,7 +199,7 @@ const CategoryTreeInner: React.FC = () => {
     if (nodes.length === 0) return;
     
     if (categories.length > 100) {
-      setIsLoading(true);
+      setLoading(true);
       setBuildProgress(0);
       
       // Use asynchronous tree builder for large datasets
@@ -223,7 +224,7 @@ const CategoryTreeInner: React.FC = () => {
         
         setNodes(processedTree.nodes);
         setEdges(processedTree.edges);
-        setIsLoading(false);
+        setLoading(false);
         setBuildProgress(0);
       });
     } else {
@@ -232,9 +233,6 @@ const CategoryTreeInner: React.FC = () => {
       setEdges(tree.edges);
     }
   }, [categories, buildTree, setNodes, setEdges, handleLabelChange, clearEditTrigger, addSiblingNode, addChildNode, setSelectedNode]);
-
-  // Node movement hook - moved after nodes/edges initialization
-  const { onNodeDragStart, onNodeDrag, onNodeDragStop } = useNodeMovement(nodes, edges, setNodes, setCategories, setSelectedNode);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -358,25 +356,24 @@ const CategoryTreeInner: React.FC = () => {
     onNodesChange(changes);
   }, [onNodesChange]);
 
-  const handleImport = useCallback((importedCategories: CategoryNode[]) => {
-    setCategories(importedCategories);
-  }, [categories.length]);
+  // Node movement handlers with proper signatures
+  const handleNodeDragStart = useCallback((event: any, node: any) => {
+    onNodeDragStart(event, node);
+  }, [onNodeDragStart]);
+
+  const handleNodeDrag = useCallback((event: any, node: any) => {
+    onNodeDrag(event, node, nodes, edges, setNodes, setCategories);
+  }, [onNodeDrag, nodes, edges, setNodes, setCategories]);
+
+  const handleNodeDragStop = useCallback((event: any, node: any) => {
+    onNodeDragStop(event, node, nodes, edges, setNodes, setCategories, setSelectedNode);
+  }, [onNodeDragStop, nodes, edges, setNodes, setCategories, setSelectedNode]);
 
   return (
     <div style={{ width: '100%', height: '100vh' }}>
-      <InfoPanel 
-        selectedNode={selectedNode} 
-        categories={categories} 
-        onImport={handleImport}
-        onShowToast={showToast}
-      />
+      <InfoPanel />
       
-      <EditorPanel
-        selectedNode={selectedNode}
-        categories={categories}
-        onCategoriesChange={setCategories}
-        onNodeSelect={setSelectedNode}
-      />
+      <EditorPanel />
       
       <Toast
         message={toast.message}
@@ -418,9 +415,9 @@ const CategoryTreeInner: React.FC = () => {
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
-        onNodeDragStart={onNodeDragStart}
-        onNodeDrag={onNodeDrag}
-        onNodeDragStop={onNodeDragStop}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragStop={handleNodeDragStop}
         snapToGrid={false}
         snapGrid={[10, 10]}
         nodeTypes={nodeTypes}
