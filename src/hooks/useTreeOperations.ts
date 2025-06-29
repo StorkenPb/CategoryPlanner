@@ -62,21 +62,24 @@ export const useTreeOperations = (categories: CategoryNode[], setCategories: (ca
 
   // Function to handle label changes
   const handleLabelChange = useCallback((nodeId: string, newLabel: string) => {
-    setCategories(
-      categories.map(category => {
-        if (category.code === nodeId) {
-          return {
-            ...category,
-            labels: category.labels.map(label => 
-              label.language === 'en' 
-                ? { ...label, text: newLabel }
-                : label
-            )
-          };
-        }
-        return category;
-      })
-    );
+    const category = categories.find(cat => cat.code === nodeId);
+    if (!category) return;
+
+    const updatedCategories = categories.map(cat => {
+      if (cat.code === nodeId) {
+        return {
+          ...cat,
+          labels: cat.labels.map(label => 
+            label.language === 'en' 
+              ? { ...label, text: newLabel }
+              : label
+          )
+        };
+      }
+      return cat;
+    });
+
+    setCategories(updatedCategories);
   }, [categories, setCategories]);
 
   // Function to remove a node and all its descendants

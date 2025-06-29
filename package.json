@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@xyflow/react": "^12.8.1",
-    "json2csv": "^6.0.0-alpha.2",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

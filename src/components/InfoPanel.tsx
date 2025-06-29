@@ -87,7 +87,7 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ selectedNode, categories, onImpor
   const descendantsCount = selectedNode ? getDescendantsCount(selectedNode) : 0;
 
   return (
-    <div className="absolute top-4 left-4 z-10 bg-white p-6 rounded-lg shadow-lg max-w-sm">
+    <div className="absolute top-4 right-4 z-10 bg-white p-6 rounded-lg shadow-lg max-w-sm">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Category Tree</h2>
       
       {/* Statistics */}

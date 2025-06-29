@@ -101,8 +101,8 @@ This tool will help e-commerce sellers (new or existing) plan, build, and visual
 - [x] Visualize category hierarchy as a tree
 - [x] Rename/edit category nodes
 - [x] Add new category nodes using visual components and keyboard
-- [ ] Remove category nodes
-- [ ] Select node to view/edit details (name, metadata)
+- [x] Remove category nodes
+- [x] Select node to view/edit details (name, metadata)
 - [x] Export category tree to CSV (using json2csv)
 - [x] Import category tree from CSV
 

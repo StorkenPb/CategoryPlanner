@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -19,6 +19,7 @@ import { CategoryNode } from '../data/sampleCategories';
 import { buildTreeFromCategories, buildTreeFromCategoriesAsync } from '../utils/treeBuilder';
 import EditableNode from './EditableNode';
 import InfoPanel from './InfoPanel';
+import EditorPanel from './EditorPanel';
 import Toast from './Toast';
 import { useTreeOperations } from '../hooks/useTreeOperations';
 import { useNodeMovement } from '../hooks/useNodeMovement';
@@ -38,9 +39,6 @@ const CategoryTreeInner: React.FC = () => {
     isVisible: false
   });
   
-  useEffect(() => {
-  }, [categories]);
-  
   // Custom hooks
   const { addSiblingNode, addChildNode, handleLabelChange, removeNode } = useTreeOperations(categories, setCategories);
   
@@ -53,15 +51,27 @@ const CategoryTreeInner: React.FC = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
   }, []);
   
-  // Create a stable reference for category structure (excluding positions)
-  const categoryStructure = useMemo(() => {
-    return categories.map(cat => ({
-      code: cat.code,
-      labels: cat.labels,
-      parent: cat.parent
-      // Exclude position to avoid rebuilding when only positions change
-    }));
-  }, [categories]);
+  const [nodes, setNodes, onNodesChange] = useNodesState([] as any[]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
+
+  // Function to clear edit trigger after it's been handled
+  const clearEditTrigger = useCallback((nodeId: string) => {
+    setNodes((prevNodes: any[]) =>
+      prevNodes.map((node: any) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              triggerEdit: false,
+              initialEditValue: ''
+            }
+          };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
   
   // Build tree from categories and update when categories change
   const buildTree = useCallback(() => {
@@ -73,14 +83,15 @@ const CategoryTreeInner: React.FC = () => {
         data: {
           ...node.data,
           onLabelChange: handleLabelChange,
+          clearEditTrigger: clearEditTrigger,
+          onAddSibling: addSiblingNode,
+          onAddChild: addChildNode,
+          onNodeSelect: setSelectedNode,
         },
       })),
       edges: tree.edges
     };
-  }, [categoryStructure, handleLabelChange]);
-  
-  const [nodes, setNodes, onNodesChange] = useNodesState([] as any[]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([] as any[]);
+  }, [categories, handleLabelChange, clearEditTrigger, addSiblingNode, addChildNode, setSelectedNode]);
 
   // Initialize tree on first render
   useEffect(() => {
@@ -113,6 +124,10 @@ const CategoryTreeInner: React.FC = () => {
         data: {
           ...node.data,
           onLabelChange: handleLabelChange,
+          clearEditTrigger: clearEditTrigger,
+          onAddSibling: addSiblingNode,
+          onAddChild: addChildNode,
+          onNodeSelect: setSelectedNode,
         },
       }));
       
@@ -197,6 +212,10 @@ const CategoryTreeInner: React.FC = () => {
             data: {
               ...node.data,
               onLabelChange: handleLabelChange,
+              clearEditTrigger: clearEditTrigger,
+              onAddSibling: addSiblingNode,
+              onAddChild: addChildNode,
+              onNodeSelect: setSelectedNode,
             },
           })),
           edges: tree.edges
@@ -212,7 +231,7 @@ const CategoryTreeInner: React.FC = () => {
       setNodes(tree.nodes);
       setEdges(tree.edges);
     }
-  }, [categoryStructure, buildTree, setNodes, setEdges, handleLabelChange]);
+  }, [categories, buildTree, setNodes, setEdges, handleLabelChange, clearEditTrigger, addSiblingNode, addChildNode, setSelectedNode]);
 
   // Node movement hook - moved after nodes/edges initialization
   const { onNodeDragStart, onNodeDrag, onNodeDragStop } = useNodeMovement(nodes, edges, setNodes, setCategories, setSelectedNode);
@@ -231,7 +250,25 @@ const CategoryTreeInner: React.FC = () => {
   }, []);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Ignore keyboard events if user is focused on an input element
+    const activeElement = document.activeElement;
+    if (activeElement && (
+      activeElement.tagName === 'INPUT' || 
+      activeElement.tagName === 'TEXTAREA' || 
+      (activeElement as HTMLElement).contentEditable === 'true'
+    )) {
+      return;
+    }
+
     if (!selectedNode) return;
+
+    // Check if it's a printable character (not a control key)
+    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      // Trigger editing on the selected node
+      triggerNodeEdit(selectedNode, event.key);
+      return;
+    }
 
     switch (event.key) {
       case 'Enter':
@@ -243,9 +280,18 @@ const CategoryTreeInner: React.FC = () => {
         break;
       case 'Tab':
         event.preventDefault();
-        const childCode = addChildNode(selectedNode);
-        if (childCode) {
-          setSelectedNode(childCode);
+        if (event.shiftKey) {
+          // Shift+Tab: select parent node
+          const selectedNodeData = categories.find(cat => cat.code === selectedNode);
+          if (selectedNodeData && selectedNodeData.parent) {
+            setSelectedNode(selectedNodeData.parent);
+          }
+        } else {
+          // Tab: add child node
+          const childCode = addChildNode(selectedNode);
+          if (childCode) {
+            setSelectedNode(childCode);
+          }
         }
         break;
       case 'Delete':
@@ -270,6 +316,25 @@ const CategoryTreeInner: React.FC = () => {
         break;
     }
   }, [selectedNode, addSiblingNode, addChildNode, removeNode, categories, showToast]);
+
+  // Function to trigger editing on a specific node
+  const triggerNodeEdit = useCallback((nodeId: string, initialChar?: string) => {
+    setNodes((prevNodes: any[]) =>
+      prevNodes.map((node: any) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              triggerEdit: true,
+              initialEditValue: initialChar || ''
+            }
+          };
+        }
+        return node;
+      })
+    );
+  }, [setNodes]);
 
   // Update ReactFlow's selection state when selectedNode changes
   useEffect(() => {
@@ -304,6 +369,13 @@ const CategoryTreeInner: React.FC = () => {
         categories={categories} 
         onImport={handleImport}
         onShowToast={showToast}
+      />
+      
+      <EditorPanel
+        selectedNode={selectedNode}
+        categories={categories}
+        onCategoriesChange={setCategories}
+        onNodeSelect={setSelectedNode}
       />
       
       <Toast
@@ -353,6 +425,7 @@ const CategoryTreeInner: React.FC = () => {
         snapGrid={[10, 10]}
         nodeTypes={nodeTypes}
         fitView
+        minZoom={0.1}
       >
         <Controls />
         <Background />

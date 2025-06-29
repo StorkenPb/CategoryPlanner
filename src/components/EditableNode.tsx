@@ -13,6 +13,12 @@ interface EditableNodeProps {
     code: string;
     labels: { language: string; text: string }[];
     onLabelChange?: (nodeId: string, newLabel: string) => void;
+    triggerEdit?: boolean;
+    initialEditValue?: string;
+    clearEditTrigger?: (nodeId: string) => void;
+    onAddSibling?: (nodeId: string) => string | undefined;
+    onAddChild?: (nodeId: string) => string | undefined;
+    onNodeSelect?: (nodeId: string) => void;
   };
   selected?: boolean;
   id: string;
@@ -31,8 +37,29 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
 
   // Update edit value when data changes
   useEffect(() => {
-    setEditValue(data.label);
+    if (data.label !== editValue) {
+      setEditValue(data.label);
+    }
   }, [data.label]);
+
+  // Handle external edit trigger
+  useEffect(() => {
+    if (data.triggerEdit && !isEditing) {
+      setIsEditing(true);
+      const initialValue = data.initialEditValue || data.label;
+      setEditValue(initialValue);
+      
+      // Clear the trigger after handling it
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.select();
+        }
+        // Clear the trigger
+        data.clearEditTrigger?.(id);
+      }, 10);
+    }
+  }, [data.triggerEdit, data.initialEditValue, data.label, isEditing, data.clearEditTrigger, id]);
 
   const handleDoubleClick = () => {
     setIsEditing(true);
@@ -40,7 +67,7 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
   };
 
   const handleSave = () => {
-    if (editValue.trim() && editValue !== data.label) {
+    if (editValue.trim() !== data.label) {
       data.onLabelChange?.(id, editValue.trim());
     }
     setIsEditing(false);
@@ -53,10 +80,12 @@ const EditableNode: React.FC<EditableNodeProps> = ({ data, selected, id }) => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleSave();
     } else if (e.key === 'Escape') {
       handleCancel();
     }
+    // Tab should do nothing special in edit mode
   };
 
   useEffect(() => {
