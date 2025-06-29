@@ -19,9 +19,12 @@ export const useNodeMovement = (
   nodes: any[],
   edges: any[],
   setNodes: any,
-  setCategories: (categories: CategoryNode[] | ((prev: CategoryNode[]) => CategoryNode[])) => void
+  setCategories: (categories: CategoryNode[] | ((prev: CategoryNode[]) => CategoryNode[])) => void,
+  setSelectedNode?: (nodeId: string | null) => void
 ) => {
   const lastAppliedPos = useRef<{ [id: string]: { x: number; y: number } }>({});
+  const dragStartPos = useRef<{ [id: string]: { x: number; y: number } }>({});
+  const lastUpdateTime = useRef<number>(0);
 
   // Function to get all descendants of a node
   const getAllDescendants = useCallback((nodeId: string): string[] => {
@@ -41,22 +44,19 @@ export const useNodeMovement = (
     return descendants;
   }, [edges]);
 
-  // Function to move a node and all its descendants
+  // Function to move a node and all its descendants - optimized version
   const moveNodeWithChildren = useCallback((nodeId: string, deltaX: number, deltaY: number) => {
     const descendants = getAllDescendants(nodeId);
-    // Only move descendants, not the parent node (let ReactFlow handle the parent)
     
     setNodes((prevNodes: any[]) =>
       prevNodes.map((node: any) => {
         if (descendants.includes(node.id)) {
-          const newPosition = {
-            x: node.position.x + deltaX,
-            y: node.position.y + deltaY,
-          };
-          
           return {
             ...node,
-            position: newPosition,
+            position: {
+              x: node.position.x + deltaX,
+              y: node.position.y + deltaY,
+            },
           };
         }
         return node;
@@ -66,7 +66,10 @@ export const useNodeMovement = (
 
   const onNodeDragStart = useCallback((event: any, node: CustomNode) => {
     // Store the initial position when dragging starts
-    lastAppliedPos.current[node.id] = { x: node.position.x, y: node.position.y };
+    const startPos = { x: node.position.x, y: node.position.y };
+    dragStartPos.current[node.id] = startPos;
+    lastAppliedPos.current[node.id] = startPos;
+    lastUpdateTime.current = Date.now();
   }, []);
 
   const onNodeDrag = useCallback((event: any, node: CustomNode) => {
@@ -84,8 +87,31 @@ export const useNodeMovement = (
   }, [moveNodeWithChildren]);
 
   const onNodeDragStop = useCallback((event: any, node: CustomNode) => {
-    // Save the final position to the category data for the dragged node and all its descendants
+    // Now move all descendants to maintain the relative positions
     const descendants = getAllDescendants(node.id);
+    const startPos = lastAppliedPos.current[node.id];
+    
+    if (startPos && descendants.length > 0) {
+      const deltaX = node.position.x - startPos.x;
+      const deltaY = node.position.y - startPos.y;
+      
+      setNodes((prevNodes: any[]) =>
+        prevNodes.map((prevNode: any) => {
+          if (descendants.includes(prevNode.id)) {
+            return {
+              ...prevNode,
+              position: {
+                x: prevNode.position.x + deltaX,
+                y: prevNode.position.y + deltaY,
+              },
+            };
+          }
+          return prevNode;
+        })
+      );
+    }
+    
+    // Store the new positions in the category data
     const nodesToUpdate = [node.id, ...descendants];
     
     setCategories((prevCategories: CategoryNode[]) => 
@@ -103,8 +129,14 @@ export const useNodeMovement = (
         return category;
       })
     );
+    
+    // Set the dragged node as selected
+    if (setSelectedNode) {
+      setSelectedNode(node.id);
+    }
+    
     delete lastAppliedPos.current[node.id];
-  }, [getAllDescendants, nodes, setCategories]);
+  }, [getAllDescendants, nodes, setNodes, setCategories, setSelectedNode]);
 
   return {
     onNodeDragStart,
